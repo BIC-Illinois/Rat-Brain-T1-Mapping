@@ -90,11 +90,48 @@ def regSIG2MDEFT(inputVolume,stroke_mask,refStroke_mask,T2data, bsplineMatrix, o
         print("STDERR:\n", result.stderr)
         raise RuntimeError(f"Command failed: {command}")
 
-    # Resample the original unsplit Allen atlas once onto the MDEFT BET grid.
+    # Resample the original unsplit atlas once onto the MDEFT BET grid.
     outputAnno = os.path.join(outfile, os.path.basename(inputVolume).split('.')[0] + '_Anno.nii.gz')
     command_args = [
         "reg_resample", "-ref", inputVolume, "-flo", sigBrain_anno,
         "-trans", outputComposite, "-inter", "0", "-res", outputAnno,
+    ]
+    command = shlex.join(command_args)
+    try:
+        result = subprocess.run(command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        print(f"Output of {command}:\n{result.stdout}")
+    except Exception as e:
+        print(f'Error while executing the command: {command_args}Errorcode: {str(e)}')
+        raise
+    if result.returncode != 0:
+        print(f"\nCommand failed: {command}\n")
+        print("STDOUT:\n", result.stdout)
+        print("STDERR:\n", result.stderr)
+        raise RuntimeError(f"Command failed: {command}")
+
+    # Invert the composed transformation for resampling MDEFT to atlas space.
+    outputCompositeInv = os.path.join(outfile, os.path.basename(inputVolume).split('.')[0] + '_CompositeInv.nii.gz')
+    command_args = [
+        "reg_transform", "-invNrr", outputComposite, sigBrain_anno, outputCompositeInv
+    ]
+    command = shlex.join(command_args)
+    try:
+        result = subprocess.run(command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        print(f"Output of {command}:\n{result.stdout}")
+    except Exception as e:
+        print(f'Error while executing the command: {command_args}Errorcode: {str(e)}')
+        raise
+    if result.returncode != 0:
+        print(f"\nCommand failed: {command}\n")
+        print("STDOUT:\n", result.stdout)
+        print("STDERR:\n", result.stderr)
+        raise RuntimeError(f"Command failed: {command}")
+    # Transform the MDEFT image to the atlas space using the composed transformation.
+    outputMDEFT = os.path.join(outfile, os.path.basename(inputVolume).split('.')[0] + '_MDEFT_AtlasSpace.nii.gz')
+    # reg_transform for input MDEFT to atlas space using the inverted affine and deformation field
+    command_args = [
+        "reg_resample", "-ref", sigBrain_anno, "-flo", inputVolume,
+        "-trans", outputCompositeInv, "-inter", "1", "-res", outputMDEFT
     ]
     command = shlex.join(command_args)
     try:
@@ -350,7 +387,7 @@ if __name__ == "__main__":
     outfile = os.path.join(os.path.dirname(inputVolume)) #this will be something like E:\CRC_data\proc_data\sub-GVsT3c3m2\ses-Baseline
     if not os.path.exists(outfile):
         os.makedirs(outfile)
-    start_output_tracking(outfile, "etc", "registration")
+    start_output_tracking(outfile, "dwi", "registration")
     setup_script_logging(outfile, "registration.log")
 
     # find related  data
