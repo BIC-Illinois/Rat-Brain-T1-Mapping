@@ -183,7 +183,7 @@ def regSIG2MDEFT(inputVolume,stroke_mask,refStroke_mask,T2data, bsplineMatrix, o
         print("STDERR:\n", result.stderr)
         raise RuntimeError(f"Command failed: {command}")
     '''
-    #Create pipline downstream compatible output (copies of fMRI anno)
+    #Create pipeline downstream compatible output (copies of anno)
     prefix = os.path.basename(inputVolume).split('.')[0]
     outputAnnoSplit = os.path.join(outfile, prefix + '_AnnoSplit.nii.gz')
     outputAnnoSplit_par = os.path.join(outfile, prefix + '_AnnoSplit_parental.nii.gz')
@@ -326,9 +326,9 @@ if __name__ == "__main__":
                         default=None)
     parser.add_argument('-s', '--splitAnno', help='Split annotations atlas', nargs='?', type=str,
                         default=os.path.abspath(os.path.join(os.getcwd(), os.pardir,os.pardir))+'/lib/sigma/SIGMA_InVivo_Anatomical_Brain_Atlas.nii.gz')
-    parser.add_argument('-f', '--splitAnno_rsfMRI', help='Split annotations atlas for rsfMRI/MDEFT', nargs='?', type=str,
+    parser.add_argument('-f', '--splitAnno_rsfMRI', help='Split annotations atlas for rsfMRI/dwi/MDEFT', nargs='?', type=str,
                         default=os.path.abspath(os.path.join(os.getcwd(), os.pardir,os.pardir))+'/lib/sigma/SIGMA_InVivo_Anatomical_Brain_Atlas.nii.gz')
-    parser.add_argument('-a', '--anno_rsfMRI', help='Parental Annotations atlas for rsfMRI/MDEFT', nargs='?', type=str,
+    parser.add_argument('-a', '--anno_rsfMRI', help='Parental Annotations atlas for rsfMRI/dwi/MDEFT', nargs='?', type=str,
                         default=os.path.abspath(os.path.join(os.getcwd(), os.pardir,os.pardir))+'/lib/sigma/SIGMA_InVivo_Anatomical_Brain_Atlas.nii.gz')
     parser.add_argument('--sigBrain_anno', help='Original unsplit SIGMA Brain annotation in atlas space', type=str,
                         default=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "lib", "sigma", "SIGMA_InVivo_Anatomical_Brain_Atlas.nii.gz"))
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     outfile = os.path.join(os.path.dirname(inputVolume)) #this will be something like E:\CRC_data\proc_data\sub-GVsT3c3m2\ses-Baseline
     if not os.path.exists(outfile):
         os.makedirs(outfile)
-    start_output_tracking(outfile, "dwi", "registration")
+    start_output_tracking(outfile, "etc", "registration")
     setup_script_logging(outfile, "registration.log")
 
     # find related  data
